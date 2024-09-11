@@ -12,11 +12,47 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  bool _showCalendar = false;  // Variable para controlar si mostrar el calendario
+  bool _showVerticalCalendar = false;
   List<Map<String, dynamic>> _notes = [];
   bool _isSortedByRecent = true;
   String _searchQuery = '';
-
+void _showSortDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Ordenar notas'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              RadioListTile<bool>(
+                title: Text('Recientes'),
+                value: true,
+                groupValue: _isSortedByRecent,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _isSortedByRecent = value!;
+                    Navigator.pop(context);  // Cierra el diálogo al seleccionar
+                  });
+                },
+              ),
+              RadioListTile<bool>(
+                title: Text('Antiguos'),
+                value: false,
+                groupValue: _isSortedByRecent,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _isSortedByRecent = value!;
+                    Navigator.pop(context);  // Cierra el diálogo al seleccionar
+                  });
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
   void _addNote(String title, String description, DateTime date) {
     setState(() {
       _notes.add({
@@ -47,45 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
       return note['title'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
              note['description'].toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
-  }
-
-  // Diálogo para elegir entre "Recientes" o "Antiguos" con Radio Buttons
-  void _showSortDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Filtrar por'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              RadioListTile<bool>(
-                title: Text('Recientes'),
-                value: true,
-                groupValue: _isSortedByRecent,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _isSortedByRecent = value!;
-                    Navigator.pop(context);  // Cierra el diálogo
-                  });
-                },
-              ),
-              RadioListTile<bool>(
-                title: Text('Antiguos'),
-                value: false,
-                groupValue: _isSortedByRecent,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _isSortedByRecent = value!;
-                    Navigator.pop(context);  // Cierra el diálogo
-                  });
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   // Verificar si hay una nota en una fecha específica
@@ -168,72 +165,43 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Botón para mostrar/ocultar el calendario
-              TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _showCalendar = !_showCalendar;  // Alterna la visibilidad del calendario
-                  });
-                },
-                icon: Icon(Icons.calendar_today),
-                label: Text(_showCalendar ? 'Ocultar Calendario' : 'Ver Calendario'),
+          // Calendario del mes actual en la parte superior
+          TableCalendar(
+            firstDay: DateTime.utc(2010, 10, 16),
+            lastDay: DateTime.utc(2030, 3, 14),
+            focusedDay: _focusedDay,
+            selectedDayPredicate: (day) {
+              return isSameDay(_selectedDay, day);
+            },
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
+              });
+            },
+            calendarStyle: CalendarStyle(
+              selectedDecoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                shape: BoxShape.circle,
               ),
-              // Botón para agregar nota
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => NoteScreen(
-                        onSaveNote: (title, description, date) => _addNote(title, description, date),
-                      ),
-                    ),
-                  );
-                },
-                icon: Icon(Icons.add),
-                label: Text('Añadir Nota'),
+              todayDecoration: BoxDecoration(
+                color: Colors.lightBlueAccent,
+                shape: BoxShape.circle,
               ),
-            ],
-          ),
-          if (_showCalendar)  // Mostrar el calendario si _showCalendar es true
-            TableCalendar(
-              firstDay: DateTime.utc(2010, 10, 16),
-              lastDay: DateTime.utc(2030, 3, 14),
-              focusedDay: _focusedDay,
-              selectedDayPredicate: (day) {
-                return isSameDay(_selectedDay, day);
-              },
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {
-                  _selectedDay = selectedDay;
-                  _focusedDay = focusedDay;
-                });
-              },
-              calendarStyle: CalendarStyle(
-                selectedDecoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                todayDecoration: BoxDecoration(
-                  color: Colors.lightBlueAccent,
-                  shape: BoxShape.circle,
-                ),
-                markerDecoration: BoxDecoration(
-                  color: Colors.green,  // Color del "tick" o check si hay una nota en esa fecha
-                  shape: BoxShape.circle,
-                ),
-                markersMaxCount: 1,
+              markerDecoration: BoxDecoration(
+                color: Colors.green,  // Color del "tick" o check si hay una nota en esa fecha
+                shape: BoxShape.circle,
               ),
-              eventLoader: (day) {
-                if (_hasNoteOnDate(day)) {
-                  return ['tick'];  // Muestra un marcador si hay una nota en ese día
-                }
-                return [];
-              },
+              markersMaxCount: 1,
             ),
+            eventLoader: (day) {
+              if (_hasNoteOnDate(day)) {
+                return ['tick'];  // Muestra un marcador si hay una nota en ese día
+              }
+              return [];
+            },
+          ),
+          
           // Lista de notas
           Expanded(
             child: ListView.builder(
@@ -260,14 +228,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     title: Text(note['title']),
                     subtitle: Text(note['description']),
-                    trailing: IconButton(
-                      icon: Icon(
-                        note['isFavorite'] ? Icons.star : Icons.star_border,
-                        color: note['isFavorite'] ? Colors.yellow : null,
-                      ),
-                      onPressed: () {
-                        _toggleFavorite(index);
-                      },
+                    trailing: Column(  // Ícono de estrella con texto "Analizar"
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            note['isFavorite'] ? Icons.star : Icons.star_border,
+                            color: note['isFavorite'] ? Colors.yellow : null,
+                          ),
+                          onPressed: () {
+                            _toggleFavorite(index);
+                          },
+                        ),
+                        Text('Analizar', style: TextStyle(fontSize: 12)),  // Texto debajo del ícono
+                      ],
                     ),
                     onTap: () {
                       Navigator.push(
@@ -287,6 +261,52 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          // Botón de calendario vertical
+          FloatingActionButton(
+            heroTag: 'calendar',
+            onPressed: () {
+              setState(() {
+                _showVerticalCalendar = !_showVerticalCalendar;  // Alterna la visibilidad del calendario vertical
+              });
+            },
+            child: Icon(Icons.calendar_today),
+            backgroundColor: Theme.of(context).primaryColor,
+          ),
+          // Botón de añadir nota
+          FloatingActionButton(
+            heroTag: 'addNote',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NoteScreen(
+                    onSaveNote: (title, description, date) => _addNote(title, description, date),
+                  ),
+                ),
+              );
+            },
+            child: Icon(Icons.add),
+            backgroundColor: Theme.of(context).primaryColor,
+          ),
+          // Botón de perfil
+          FloatingActionButton(
+            heroTag: 'profile',
+            onPressed: () {
+              // Acción de perfil, por ejemplo, mostrar la pantalla de ajustes o perfil
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
+            },
+            child: Icon(Icons.person),
+            backgroundColor: Theme.of(context).primaryColor,
+          ),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
