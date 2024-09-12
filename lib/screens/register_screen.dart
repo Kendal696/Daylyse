@@ -13,80 +13,87 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Fondo con degradado de colores similar al login
+      // Fondo con degradado de tonos celestes y blancos
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.greenAccent.shade200, Colors.blueAccent.shade100],
+            colors: [Colors.white, Colors.lightBlue.shade300],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
         child: Center(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Icono para registro
-                Icon(
-                  Icons.person_add_alt_1,
-                  size: 100.0,
-                  color: Colors.white,
+                // Logo o icono personalizado
+                CircleAvatar(
+                  radius: 60.0,
+                  backgroundColor: Colors.white.withOpacity(0.8),
+                  child: Icon(
+                    Icons.person_add_alt_1_outlined,
+                    size: 80.0,
+                    color: Colors.lightBlue.shade700,
+                  ),
                 ),
                 SizedBox(height: 40.0),
                 // Campo de texto para email
                 TextField(
                   controller: _emailController,
                   decoration: InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined, color: Colors.white),
+                    hintText: 'Email',
+                    prefixIcon: Icon(Icons.email_outlined, color: Colors.lightBlue.shade700),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
+                    fillColor: Colors.white.withOpacity(0.9),
+                    contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30.0),
                       borderSide: BorderSide.none,
                     ),
-                    labelStyle: TextStyle(color: Colors.white),
+                    hintStyle: TextStyle(color: Colors.grey),
                   ),
                   keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.black),
                 ),
                 SizedBox(height: 16.0),
                 // Campo de texto para contraseña
                 TextField(
                   controller: _passwordController,
                   decoration: InputDecoration(
-                    labelText: 'Contraseña',
-                    prefixIcon: Icon(Icons.lock_outline, color: Colors.white),
+                    hintText: 'Contraseña',
+                    prefixIcon: Icon(Icons.lock_outline, color: Colors.lightBlue.shade700),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
+                    fillColor: Colors.white.withOpacity(0.9),
+                    contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30.0),
                       borderSide: BorderSide.none,
                     ),
-                    labelStyle: TextStyle(color: Colors.white),
+                    hintStyle: TextStyle(color: Colors.grey),
                   ),
                   obscureText: true,
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.black),
                 ),
                 SizedBox(height: 16.0),
                 // Campo de texto para confirmar contraseña
                 TextField(
                   controller: _confirmPasswordController,
                   decoration: InputDecoration(
-                    labelText: 'Confirmar Contraseña',
-                    prefixIcon: Icon(Icons.lock_outline, color: Colors.white),
+                    hintText: 'Confirmar Contraseña',
+                    prefixIcon: Icon(Icons.lock_outline, color: Colors.lightBlue.shade700),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
+                    fillColor: Colors.white.withOpacity(0.9),
+                    contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30.0),
                       borderSide: BorderSide.none,
                     ),
-                    labelStyle: TextStyle(color: Colors.white),
+                    hintStyle: TextStyle(color: Colors.grey),
                   ),
                   obscureText: true,
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.black),
                 ),
                 SizedBox(height: 32.0),
                 // Botón de registrarse
@@ -101,13 +108,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 15.0),
+                    padding: EdgeInsets.symmetric(horizontal: 80.0, vertical: 20.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
-                    backgroundColor: Colors.white.withOpacity(0.3), // Color corregido
+                    backgroundColor: Colors.lightBlue.shade700,
+                    elevation: 5,
+                    shadowColor: Colors.lightBlueAccent,
                   ),
-                  child: Text('Registrarse', style: TextStyle(fontSize: 16.0, color: Colors.white)),
+                  child: Text(
+                    'Registrarse',
+                    style: TextStyle(fontSize: 18.0, color: Colors.white),
+                  ),
                 ),
                 SizedBox(height: 16.0),
                 // Botón de iniciar sesión
@@ -117,7 +129,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                   child: Text(
                     '¿Ya tienes una cuenta? Inicia sesión',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.lightBlue.shade700),
                   ),
                 ),
               ],
