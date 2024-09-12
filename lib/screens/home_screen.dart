@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'annual_calendar_screen.dart';  // Importa la pantalla del calendario anual
 import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
 import 'note_screen.dart';
-import 'package:intl/intl.dart';  // Para formatear fechas
-import 'settings_screen.dart';  // Pantalla para ajustes y tema
+import 'settings_screen.dart';
+import 'faq_screen.dart';  // Pantalla de Preguntas Frecuentes
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -12,47 +14,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  bool _showVerticalCalendar = false;
+  bool _isCalendarExpanded = false;  // Controla si el calendario está expandido o colapsado
   List<Map<String, dynamic>> _notes = [];
   bool _isSortedByRecent = true;
   String _searchQuery = '';
-void _showSortDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Ordenar notas'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              RadioListTile<bool>(
-                title: Text('Recientes'),
-                value: true,
-                groupValue: _isSortedByRecent,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _isSortedByRecent = value!;
-                    Navigator.pop(context);  // Cierra el diálogo al seleccionar
-                  });
-                },
-              ),
-              RadioListTile<bool>(
-                title: Text('Antiguos'),
-                value: false,
-                groupValue: _isSortedByRecent,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _isSortedByRecent = value!;
-                    Navigator.pop(context);  // Cierra el diálogo al seleccionar
-                  });
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+
   void _addNote(String title, String description, DateTime date) {
     setState(() {
       _notes.add({
@@ -85,9 +51,43 @@ void _showSortDialog() {
     }).toList();
   }
 
-  // Verificar si hay una nota en una fecha específica
-  bool _hasNoteOnDate(DateTime date) {
-    return _notes.any((note) => isSameDay(note['date'], date));
+  // Método para mostrar el diálogo de ordenación
+  void _showSortDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Ordenar notas'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              RadioListTile<bool>(
+                title: Text('Recientes'),
+                value: true,
+                groupValue: _isSortedByRecent,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _isSortedByRecent = value!;
+                    Navigator.pop(context);
+                  });
+                },
+              ),
+              RadioListTile<bool>(
+                title: Text('Antiguos'),
+                value: false,
+                groupValue: _isSortedByRecent,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _isSortedByRecent = value!;
+                    Navigator.pop(context);
+                  });
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -95,8 +95,8 @@ void _showSortDialog() {
     List<Map<String, dynamic>> sortedNotes = _filteredNotes();
     sortedNotes.sort((a, b) {
       return _isSortedByRecent
-          ? b['date'].compareTo(a['date'])  // Más recientes primero
-          : a['date'].compareTo(b['date']);  // Más antiguos primero
+          ? b['date'].compareTo(a['date'])
+          : a['date'].compareTo(b['date']);
     });
 
     return Scaffold(
@@ -105,7 +105,7 @@ void _showSortDialog() {
           decoration: InputDecoration(
             hintText: 'Buscar...',
             border: InputBorder.none,
-            prefixIcon: Icon(Icons.search, color: Colors.white),  // Lupa dentro del buscador
+            prefixIcon: Icon(Icons.search, color: Colors.white),
           ),
           style: TextStyle(color: Colors.white),
           onChanged: (query) {
@@ -114,15 +114,7 @@ void _showSortDialog() {
             });
           },
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.filter_list),
-            onPressed: () {
-              _showSortDialog();  // Mostrar el diálogo de filtro
-            },
-            tooltip: 'Filtrar por recientes o antiguos',
-          ),
-        ],
+        // Dejar el botón de menú hamburguesa predeterminado para abrir el Drawer
       ),
       drawer: Drawer(  // Menú hamburguesa
         child: ListView(
@@ -133,16 +125,28 @@ void _showSortDialog() {
                 color: Theme.of(context).primaryColor,
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(Icons.person, size: 64, color: Colors.white),  // Ícono de perfil
-                  SizedBox(height: 8),
-                  Text('Perfil', style: TextStyle(color: Colors.white, fontSize: 24)),
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.person,
+                      size: 64,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'Nombre Completo',
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
                 ],
               ),
             ),
             ListTile(
               leading: Icon(Icons.settings),
-              title: Text('Ajustes'),
+              title: Text('Configuraciones'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -156,7 +160,17 @@ void _showSortDialog() {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SettingsScreen()),  // Dirige a la pantalla para cambiar el tema
+                  MaterialPageRoute(builder: (context) => SettingsScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.question_answer),
+              title: Text('Preguntas Frecuentes'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FaqScreen()),
                 );
               },
             ),
@@ -165,82 +179,100 @@ void _showSortDialog() {
       ),
       body: Column(
         children: [
-          // Calendario del mes actual en la parte superior
-          TableCalendar(
-            firstDay: DateTime.utc(2010, 10, 16),
-            lastDay: DateTime.utc(2030, 3, 14),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) {
-              return isSameDay(_selectedDay, day);
-            },
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            },
-            calendarStyle: CalendarStyle(
-              selectedDecoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                shape: BoxShape.circle,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  DateFormat('MMMM yyyy').format(_focusedDay),  // Mes y año
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ),
-              todayDecoration: BoxDecoration(
-                color: Colors.lightBlueAccent,
-                shape: BoxShape.circle,
+              IconButton(
+                icon: Icon(_isCalendarExpanded
+                    ? Icons.keyboard_arrow_up
+                    : Icons.keyboard_arrow_down),
+                onPressed: () {
+                  setState(() {
+                    _isCalendarExpanded = !_isCalendarExpanded;
+                  });
+                },
               ),
-              markerDecoration: BoxDecoration(
-                color: Colors.green,  // Color del "tick" o check si hay una nota en esa fecha
-                shape: BoxShape.circle,
-              ),
-              markersMaxCount: 1,
-            ),
-            eventLoader: (day) {
-              if (_hasNoteOnDate(day)) {
-                return ['tick'];  // Muestra un marcador si hay una nota en ese día
-              }
-              return [];
-            },
+            ],
           ),
-          
-          // Lista de notas
+
+          // Mostrar el calendario expandido si la flecha es presionada
+          if (_isCalendarExpanded)
+            TableCalendar(
+              firstDay: DateTime.utc(2010, 10, 16),
+              lastDay: DateTime.utc(2030, 3, 14),
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (day) {
+                return isSameDay(_selectedDay, day);
+              },
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+              },
+              calendarStyle: CalendarStyle(
+                selectedDecoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  shape: BoxShape.circle,
+                ),
+                todayDecoration: BoxDecoration(
+                  color: Colors.lightBlueAccent,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
           Expanded(
             child: ListView.builder(
               itemCount: sortedNotes.length,
               itemBuilder: (context, index) {
                 final note = sortedNotes[index];
-                final formattedDate = DateFormat('d MMM').format(note['date']);  // Formato de la fecha
+                final formattedDate = DateFormat('d MMM').format(note['date']);
 
                 return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                   child: ListTile(
                     leading: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          DateFormat('d').format(note['date']),  // Día
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          DateFormat('d').format(note['date']),
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          DateFormat('MMM').format(note['date']),  // Mes
+                          DateFormat('MMM').format(note['date']),
                           style: TextStyle(fontSize: 16, color: Colors.grey),
                         ),
                       ],
                     ),
                     title: Text(note['title']),
                     subtitle: Text(note['description']),
-                    trailing: Column(  // Ícono de estrella con texto "Analizar"
+                    trailing: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
                           icon: Icon(
-                            note['isFavorite'] ? Icons.star : Icons.star_border,
-                            color: note['isFavorite'] ? Colors.yellow : null,
+                            note['isFavorite']
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: note['isFavorite']
+                                ? Colors.yellow
+                                : null,
                           ),
                           onPressed: () {
                             _toggleFavorite(index);
                           },
                         ),
-                        Text('Analizar', style: TextStyle(fontSize: 12)),  // Texto debajo del ícono
+                        Text('Analizar',
+                            style: TextStyle(fontSize: 12)),
                       ],
                     ),
                     onTap: () {
@@ -248,8 +280,9 @@ void _showSortDialog() {
                         context,
                         MaterialPageRoute(
                           builder: (context) => NoteScreen(
-                            onSaveNote: (title, description, date) => _editNote(index, title, description, date),
-                            note: note,  // Pasamos la nota para editar
+                            onSaveNote: (title, description, date) =>
+                                _editNote(index, title, description, date),
+                            note: note,
                           ),
                         ),
                       );
@@ -261,21 +294,21 @@ void _showSortDialog() {
           ),
         ],
       ),
+      // Botones flotantes
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Botón de calendario vertical
           FloatingActionButton(
             heroTag: 'calendar',
             onPressed: () {
-              setState(() {
-                _showVerticalCalendar = !_showVerticalCalendar;  // Alterna la visibilidad del calendario vertical
-              });
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AnnualCalendarScreen()),
+              );
             },
             child: Icon(Icons.calendar_today),
             backgroundColor: Theme.of(context).primaryColor,
           ),
-          // Botón de añadir nota
           FloatingActionButton(
             heroTag: 'addNote',
             onPressed: () {
@@ -283,7 +316,8 @@ void _showSortDialog() {
                 context,
                 MaterialPageRoute(
                   builder: (context) => NoteScreen(
-                    onSaveNote: (title, description, date) => _addNote(title, description, date),
+                    onSaveNote: (title, description, date) =>
+                        _addNote(title, description, date),
                   ),
                 ),
               );
@@ -291,11 +325,9 @@ void _showSortDialog() {
             child: Icon(Icons.add),
             backgroundColor: Theme.of(context).primaryColor,
           ),
-          // Botón de perfil
           FloatingActionButton(
             heroTag: 'profile',
             onPressed: () {
-              // Acción de perfil, por ejemplo, mostrar la pantalla de ajustes o perfil
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => SettingsScreen()),

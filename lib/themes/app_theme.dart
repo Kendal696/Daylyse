@@ -1,53 +1,64 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
+  // Color principal celeste unificado para ambos temas
+  static const Color primaryCeleste = Color(0xFF03A9F4);  // Mismo celeste para ambos temas
+
   // Tema claro: blanco y celeste
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
-    primaryColor: Colors.lightBlue[700],  // Color principal celeste
+    primaryColor: primaryCeleste,  // Color principal celeste
     scaffoldBackgroundColor: Colors.white,  // Fondo blanco
     appBarTheme: AppBarTheme(
-      color: Colors.lightBlue[700],  // AppBar celeste
+      color: primaryCeleste,  // AppBar celeste
+    ),
+    drawerTheme: DrawerThemeData(
+      backgroundColor: Colors.white,  // Fondo blanco en el Drawer
     ),
     textTheme: TextTheme(
-      bodyText1: TextStyle(color: Colors.black),  // Texto negro en el cuerpo
-      bodyText2: TextStyle(color: Colors.black),  // Texto negro en el cuerpo
+      bodyText1: TextStyle(color: Colors.black),  // Texto negro
+      bodyText2: TextStyle(color: Colors.black),
       headline6: TextStyle(color: Colors.white),  // Texto blanco en AppBar
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.lightBlue[700],  // Botones celestes
+        backgroundColor: primaryCeleste,  // Botones celestes
         foregroundColor: Colors.white,  // Texto blanco en botones
       ),
     ),
     buttonTheme: ButtonThemeData(
-      buttonColor: Colors.lightBlue[700],  // Botones celestes
-      textTheme: ButtonTextTheme.primary,  // Texto blanco en botones
+      buttonColor: primaryCeleste,  // Botones celestes
+      textTheme: ButtonTextTheme.primary,
     ),
+    iconTheme: IconThemeData(color: Colors.white),  // Iconos blancos
   );
 
-  // Tema oscuro: fondo azul marino, botones celestes, letras blancas
+  // Tema oscuro: azul marino, botones celestes, letras blancas
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
-    primaryColor: Colors.lightBlue[700],  // Mantener botones celestes
+    primaryColor: primaryCeleste,  // Color celeste unificado para ambos temas
     scaffoldBackgroundColor: Color(0xFF001F3F),  // Fondo azul marino oscuro
     appBarTheme: AppBarTheme(
       color: Color(0xFF001B33),  // AppBar aún más oscuro que el fondo
     ),
+    drawerTheme: DrawerThemeData(
+      backgroundColor: Color(0xFF001B33),  // Fondo azul marino en el Drawer
+    ),
     textTheme: TextTheme(
-      bodyText1: TextStyle(color: Colors.white),  // Texto blanco en el cuerpo
-      bodyText2: TextStyle(color: Colors.white),  // Texto blanco en el cuerpo
+      bodyText1: TextStyle(color: Colors.white),  // Texto blanco
+      bodyText2: TextStyle(color: Colors.white),
       headline6: TextStyle(color: Colors.white),  // Texto blanco en AppBar
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.lightBlue[700],  // Botones celestes en tema oscuro también
+        backgroundColor: primaryCeleste,  // Botones celestes
         foregroundColor: Colors.white,  // Texto blanco en botones
       ),
     ),
     buttonTheme: ButtonThemeData(
-      buttonColor: Colors.lightBlue[700],  // Botones celestes en tema oscuro
-      textTheme: ButtonTextTheme.primary,  // Texto blanco en botones
+      buttonColor: primaryCeleste,  // Botones celestes
+      textTheme: ButtonTextTheme.primary,
     ),
+    iconTheme: IconThemeData(color: Colors.white),  // Iconos en blanco
   );
 }

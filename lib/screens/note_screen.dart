@@ -14,7 +14,7 @@ class NoteScreen extends StatefulWidget {
 class _NoteScreenState extends State<NoteScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate = DateTime.now();  // Fecha seleccionada
 
   @override
   void initState() {
@@ -26,11 +26,19 @@ class _NoteScreenState extends State<NoteScreen> {
     }
   }
 
-  // Cambiar la fecha al día siguiente
-  void _nextDay() {
-    setState(() {
-      _selectedDate = _selectedDate.add(Duration(days: 1));
-    });
+  // Función para abrir el DatePicker y seleccionar una fecha
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,  // Fecha inicial
+      firstDate: DateTime(2000),   // Fecha mínima
+      lastDate: DateTime(2100),    // Fecha máxima
+    );
+    if (pickedDate != null && pickedDate != _selectedDate) {
+      setState(() {
+        _selectedDate = pickedDate;  // Actualizar la fecha seleccionada
+      });
+    }
   }
 
   // Cambiar la fecha al día anterior
@@ -40,15 +48,46 @@ class _NoteScreenState extends State<NoteScreen> {
     });
   }
 
+  // Cambiar la fecha al día siguiente
+  void _nextDay() {
+    setState(() {
+      _selectedDate = _selectedDate.add(Duration(days: 1));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.note == null ? 'Añadir Nueva Nota' : 'Editar Nota'),
+        title: GestureDetector(
+          onTap: () => _selectDate(context),  // Abre el selector de fecha al tocar la fecha
+          child: Row(
+            mainAxisSize: MainAxisSize.min,  // Minimiza el espacio ocupado por el título
+            children: [
+              Icon(Icons.calendar_today, size: 20),
+              SizedBox(width: 8),
+              Text(
+                DateFormat('d MMM yyyy').format(_selectedDate),  // Muestra la fecha seleccionada
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.arrow_back),  // Ícono para cambiar al día anterior
+            onPressed: _previousDay,
+          ),
+          IconButton(
+            icon: Icon(Icons.arrow_forward),  // Ícono para cambiar al día siguiente
+            onPressed: _nextDay,
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _titleController,
@@ -64,25 +103,7 @@ class _NoteScreenState extends State<NoteScreen> {
               ),
               maxLines: 5,
             ),
-            SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: _previousDay,  // Cambia al día anterior
-                ),
-                Text(
-                  DateFormat('d MMM yyyy').format(_selectedDate),  // Fecha actual
-                  style: TextStyle(fontSize: 16),
-                ),
-                IconButton(
-                  icon: Icon(Icons.arrow_forward),
-                  onPressed: _nextDay,  // Cambia al día siguiente
-                ),
-              ],
-            ),
-            SizedBox(height: 32.0),
+            Spacer(),
             ElevatedButton(
               onPressed: () {
                 final title = _titleController.text;
