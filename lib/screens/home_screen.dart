@@ -360,49 +360,67 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       // Botones flotantes
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          FloatingActionButton(
-            heroTag: 'calendar',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AnnualCalendarScreen(notes: _notes)),
-              );
-            },
-            child: Icon(Icons.calendar_today),
-            backgroundColor: Theme.of(context).primaryColor,
-          ),
-          FloatingActionButton(
-            heroTag: 'addNote',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NoteScreen(
-                    onSaveNote: (title, description, date) => _addNote(title, description, date),
-                  ),
-                ),
-              );
-            },
-            child: Icon(Icons.add),
-            backgroundColor: Theme.of(context).primaryColor,
-          ),
-          FloatingActionButton(
-            heroTag: 'profile',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SettingsScreen()),
-              );
-            },
-            child: Icon(Icons.person),
-            backgroundColor: Theme.of(context).primaryColor,
-          ),
-        ],
+      floatingActionButton: Container(
+  width: double.infinity,
+  padding: EdgeInsets.symmetric(horizontal: 128.0), // Ajustaste esto a 128
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      // Botón de calendario (botón mini)
+      FloatingActionButton(
+        heroTag: 'calendar',
+        mini: true,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AnnualCalendarScreen(notes: _notes)),
+          );
+        },
+        backgroundColor: Colors.grey.withOpacity(0.6),
+        elevation: 0,
+        shape: CircleBorder(), // Asegura que el botón sea circular
+        child: Icon(Icons.calendar_today, color: Colors.white, size: 24),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      // Botón central de añadir nota
+      FloatingActionButton(
+        heroTag: 'addNote',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => NoteScreen(
+                onSaveNote: (title, description, date) => _addNote(title, description, date),
+              ),
+            ),
+          );
+        },
+        backgroundColor: Theme.of(context).primaryColor,
+        elevation: 2,
+        shape: CircleBorder(), // Asegura que el botón sea circular
+        child: Icon(Icons.add, color: Colors.white, size: 32),
+      ),
+      // Botón de perfil (botón mini)
+      FloatingActionButton(
+        heroTag: 'profile',
+        mini: true,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SettingsScreen()),
+          );
+        },
+        backgroundColor: Colors.grey.withOpacity(0.6),
+        elevation: 0,
+        shape: CircleBorder(), // Asegura que el botón sea circular
+        child: Icon(Icons.person, color: Colors.white, size: 24),
+      ),
+    ],
+  ),
+),
+floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+
+
     );
   }
 }
