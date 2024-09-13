@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';  // Para manejar fechas
+import 'package:intl/intl.dart';
 
 class NoteScreen extends StatefulWidget {
   final Function(String, String, DateTime) onSaveNote;

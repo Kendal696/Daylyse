@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'annual_calendar_screen.dart';  // Importa la pantalla del calendario anual
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'note_screen.dart';
 import 'settings_screen.dart';
-import 'faq_screen.dart';  // Pantalla de Preguntas Frecuentes
+import 'faq_screen.dart';
+import 'annual_calendar_screen.dart';
+import 'day_notes_screen.dart';
+import 'ai_feedback_screen.dart'; // Importa la nueva pantalla
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -14,40 +16,42 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  bool _isCalendarExpanded = false;  // Controla si el calendario está expandido o colapsado
-  List<Map<String, dynamic>> _notes = [];
+  bool _isCalendarExpanded = false;
+  Map<DateTime, List<Map<String, dynamic>>> _notes = {};
   bool _isSortedByRecent = true;
   String _searchQuery = '';
 
   void _addNote(String title, String description, DateTime date) {
     setState(() {
-      _notes.add({
+      DateTime noteDate = DateTime(date.year, date.month, date.day);
+      if (_notes[noteDate] == null) {
+        _notes[noteDate] = [];
+      }
+      _notes[noteDate]!.add({
         'title': title,
         'description': description,
-        'date': date,
-        'isFavorite': false,
+        'date': noteDate,
       });
     });
   }
 
-  void _editNote(int index, String title, String description, DateTime date) {
+  void _editNote(DateTime date, int index, String title, String description) {
     setState(() {
-      _notes[index]['title'] = title;
-      _notes[index]['description'] = description;
-      _notes[index]['date'] = date;
-    });
-  }
-
-  void _toggleFavorite(int index) {
-    setState(() {
-      _notes[index]['isFavorite'] = !_notes[index]['isFavorite'];
+      DateTime noteDate = DateTime(date.year, date.month, date.day);
+      _notes[noteDate]![index]['title'] = title;
+      _notes[noteDate]![index]['description'] = description;
     });
   }
 
   List<Map<String, dynamic>> _filteredNotes() {
-    return _notes.where((note) {
+    List<Map<String, dynamic>> allNotes = [];
+    _notes.values.forEach((notesList) {
+      allNotes.addAll(notesList);
+    });
+
+    return allNotes.where((note) {
       return note['title'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             note['description'].toLowerCase().contains(_searchQuery.toLowerCase());
+          note['description'].toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -114,12 +118,18 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           },
         ),
-        // Dejar el botón de menú hamburguesa predeterminado para abrir el Drawer
+        actions: [
+          IconButton(
+            icon: Icon(Icons.sort),
+            onPressed: _showSortDialog,
+          ),
+        ],
       ),
-      drawer: Drawer(  // Menú hamburguesa
+      drawer: Drawer( // Menú hamburguesa
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
+            // ... (DrawerHeader y opciones)
             DrawerHeader(
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,
@@ -158,10 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: Icon(Icons.brightness_6),
               title: Text('Tema'),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SettingsScreen()),
-                );
+                // Aquí puedes implementar la funcionalidad de cambiar el tema
               },
             ),
             ListTile(
@@ -179,6 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
+          // Título y botón para expandir el calendario
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -201,23 +209,46 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-
-          // Mostrar el calendario expandido si la flecha es presionada
           if (_isCalendarExpanded)
             TableCalendar(
-              firstDay: DateTime.utc(2010, 10, 16),
-              lastDay: DateTime.utc(2030, 3, 14),
+              firstDay: DateTime.utc(2000, 1, 1),
+              lastDay: DateTime.utc(2100, 12, 31),
               focusedDay: _focusedDay,
               selectedDayPredicate: (day) {
                 return isSameDay(_selectedDay, day);
+              },
+              eventLoader: (day) {
+                DateTime dateWithoutTime = DateTime(day.year, day.month, day.day);
+                return _notes[dateWithoutTime] != null && _notes[dateWithoutTime]!.isNotEmpty
+                    ? ['note']
+                    : [];
               },
               onDaySelected: (selectedDay, focusedDay) {
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
                 });
+                // Navegar a la pantalla de notas del día
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DayNotesScreen(
+                      date: selectedDay,
+                      notes: _notes[DateTime(selectedDay.year, selectedDay.month, selectedDay.day)] ?? [],
+                      onEditNote: (index, title, description) => _editNote(
+                          DateTime(selectedDay.year, selectedDay.month, selectedDay.day),
+                          index,
+                          title,
+                          description),
+                    ),
+                  ),
+                );
               },
               calendarStyle: CalendarStyle(
+                markerDecoration: BoxDecoration(
+                  color: Colors.blueAccent,
+                  shape: BoxShape.circle,
+                ),
                 selectedDecoration: BoxDecoration(
                   color: Theme.of(context).primaryColor,
                   shape: BoxShape.circle,
@@ -236,57 +267,91 @@ class _HomeScreenState extends State<HomeScreen> {
                 final formattedDate = DateFormat('d MMM').format(note['date']);
 
                 return Card(
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: ListTile(
-                    leading: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          DateFormat('d').format(note['date']),
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                        // Fecha a la izquierda
+                        SizedBox(
+                          width: 50,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                DateFormat('d').format(note['date']),
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                DateFormat('MMM').format(note['date']),
+                                style: TextStyle(fontSize: 16, color: Colors.grey),
+                              ),
+                            ],
+                          ),
                         ),
-                        Text(
-                          DateFormat('MMM').format(note['date']),
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        SizedBox(width: 8),
+                        // Título y descripción
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              // Navegar a la pantalla de edición de la nota
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NoteScreen(
+                                    onSaveNote: (title, description, date) {
+                                      _editNote(
+                                        DateTime(note['date'].year, note['date'].month, note['date'].day),
+                                        _notes[DateTime(note['date'].year, note['date'].month, note['date'].day)]!
+                                            .indexOf(note),
+                                        title,
+                                        description,
+                                      );
+                                    },
+                                    note: note,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  note['title'],
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  note['description'],
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Botón Analizar
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.star, color: Colors.yellow),
+                              onPressed: () {
+                                // Navegar a la pantalla de feedback de IA
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AIFeedbackScreen(note: note),
+                                  ),
+                                );
+                              },
+                            ),
+                            Text('Analizar', style: TextStyle(fontSize: 12)),
+                          ],
                         ),
                       ],
                     ),
-                    title: Text(note['title']),
-                    subtitle: Text(note['description']),
-                    trailing: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            note['isFavorite']
-                                ? Icons.star
-                                : Icons.star_border,
-                            color: note['isFavorite']
-                                ? Colors.yellow
-                                : null,
-                          ),
-                          onPressed: () {
-                            _toggleFavorite(index);
-                          },
-                        ),
-                        Text('Analizar',
-                            style: TextStyle(fontSize: 12)),
-                      ],
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => NoteScreen(
-                            onSaveNote: (title, description, date) =>
-                                _editNote(index, title, description, date),
-                            note: note,
-                          ),
-                        ),
-                      );
-                    },
                   ),
                 );
               },
@@ -303,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AnnualCalendarScreen()),
+                MaterialPageRoute(builder: (context) => AnnualCalendarScreen(notes: _notes)),
               );
             },
             child: Icon(Icons.calendar_today),
@@ -316,8 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => NoteScreen(
-                    onSaveNote: (title, description, date) =>
-                        _addNote(title, description, date),
+                    onSaveNote: (title, description, date) => _addNote(title, description, date),
                   ),
                 ),
               );

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'day_notes_screen.dart';
 
 class AnnualCalendarScreen extends StatelessWidget {
+  final Map<DateTime, List<Map<String, dynamic>>> notes;
+
+  AnnualCalendarScreen({required this.notes});
+
   @override
   Widget build(BuildContext context) {
     final List<String> months = [
@@ -22,6 +27,11 @@ class AnnualCalendarScreen extends StatelessWidget {
       return DateTime(year, month + 1, 0);  // El día 0 del mes siguiente es el último día del mes actual
     }
 
+    // Función para obtener las fechas que tienen notas
+    List<DateTime> _getDaysWithNotesInMonth(int month) {
+      return notes.keys.where((date) => date.month == month).toList();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Calendario Anual $currentYear'),
@@ -32,9 +42,9 @@ class AnnualCalendarScreen extends StatelessWidget {
           // Obtener el primer y último día del mes actual
           DateTime firstDay = _getFirstDayOfMonth(currentYear, index + 1);
           DateTime lastDay = _getLastDayOfMonth(currentYear, index + 1);
-          
-          // Aquí ajustamos el focusedDay al firstDay del mes actual
-          DateTime focusedDay = firstDay;
+
+          // Fechas con notas en este mes
+          List<DateTime> daysWithNotes = _getDaysWithNotesInMonth(index + 1);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,12 +59,31 @@ class AnnualCalendarScreen extends StatelessWidget {
               TableCalendar(
                 firstDay: firstDay,
                 lastDay: lastDay,
-                focusedDay: focusedDay,  // El día enfocado será el primer día del mes
-                calendarFormat: CalendarFormat.month,  // Mostrar solo el mes actual
-                headerVisible: false,  // Ocultar encabezado de cada calendario
+                focusedDay: firstDay,
+                calendarFormat: CalendarFormat.month,
+                headerVisible: false,
+                availableGestures: AvailableGestures.none,
+                eventLoader: (day) {
+                  DateTime dateWithoutTime = DateTime(day.year, day.month, day.day);
+                  return notes[dateWithoutTime] != null && notes[dateWithoutTime]!.isNotEmpty
+                      ? ['note']
+                      : [];
+                },
+                onDaySelected: (selectedDay, focusedDay) {
+                  // Navegar a la pantalla de notas del día
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DayNotesScreen(
+                        date: selectedDay,
+                        notes: notes[DateTime(selectedDay.year, selectedDay.month, selectedDay.day)] ?? [],
+                      ),
+                    ),
+                  );
+                },
                 calendarStyle: CalendarStyle(
-                  selectedDecoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
+                  markerDecoration: BoxDecoration(
+                    color: Colors.blueAccent,
                     shape: BoxShape.circle,
                   ),
                   todayDecoration: BoxDecoration(
@@ -62,7 +91,6 @@ class AnnualCalendarScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                 ),
-                availableGestures: AvailableGestures.none,  // Desactivar gestos para evitar cambiar el mes
               ),
               SizedBox(height: 16.0),
             ],

@@ -59,6 +59,6 @@ class AppTheme {
       buttonColor: primaryCeleste,  // Botones celestes
       textTheme: ButtonTextTheme.primary,
     ),
-    iconTheme: IconThemeData(color: Colors.white),  // Iconos en blanco
+    iconTheme: IconThemeData(color: Colors.white),  
   );
 }
