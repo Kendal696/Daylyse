@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/theme_provider.dart';
-import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/feedback_screen.dart';
-import 'screens/settings_screen.dart';
-import 'screens/register_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/home/home_screen.dart';
+import 'screens/settings/feedback_screen.dart';
+import 'screens/settings/settings_screen.dart';
+import 'screens/auth/register_screen.dart';
 
 void main() {
   runApp(

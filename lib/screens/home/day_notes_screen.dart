@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'note_screen.dart';
-import 'ai_feedback_screen.dart'; // Importa la nueva pantalla
+import '../note_screen.dart';
+import '../ai_feedback_screen.dart'; // Importa la nueva pantalla
 
 class DayNotesScreen extends StatefulWidget {
   final DateTime date;
