@@ -16,6 +16,10 @@ class AnnualCalendarScreen extends StatelessWidget {
     ];
 
     final int currentYear = DateTime.now().year;
+    final int currentMonthIndex = DateTime.now().month - 1; // Índice basado en 0
+
+    // Crear una lista de índices de meses comenzando desde el mes actual
+    List<int> monthIndices = List.generate(12, (index) => (currentMonthIndex + index) % 12);
 
     // Función para obtener el primer día del mes
     DateTime _getFirstDayOfMonth(int year, int month) {
@@ -24,12 +28,7 @@ class AnnualCalendarScreen extends StatelessWidget {
 
     // Función para obtener el último día del mes
     DateTime _getLastDayOfMonth(int year, int month) {
-      return DateTime(year, month + 1, 0);  // El día 0 del mes siguiente es el último día del mes actual
-    }
-
-    // Función para obtener las fechas que tienen notas
-    List<DateTime> _getDaysWithNotesInMonth(int month) {
-      return notes.keys.where((date) => date.month == month).toList();
+      return DateTime(year, month + 1, 0);
     }
 
     return Scaffold(
@@ -39,27 +38,30 @@ class AnnualCalendarScreen extends StatelessWidget {
       body: ListView.builder(
         itemCount: months.length,
         itemBuilder: (context, index) {
-          // Obtener el primer y último día del mes actual
-          DateTime firstDay = _getFirstDayOfMonth(currentYear, index + 1);
-          DateTime lastDay = _getLastDayOfMonth(currentYear, index + 1);
+          // Obtener el índice del mes actual ajustado
+          int monthIndex = monthIndices[index];
 
-          // Fechas con notas en este mes
-          List<DateTime> daysWithNotes = _getDaysWithNotesInMonth(index + 1);
+          // Obtener el primer y último día del mes actual
+          DateTime firstDay = _getFirstDayOfMonth(currentYear, monthIndex + 1);
+          DateTime lastDay = _getLastDayOfMonth(currentYear, monthIndex + 1);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
+              // Encabezado del mes con fondo de color
+              Container(
+                width: double.infinity,
+                color: Colors.blueGrey[50],
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  '${months[index]} $currentYear',  // Nombre del mes y año
+                  '${months[monthIndex]} $currentYear',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
               TableCalendar(
                 firstDay: firstDay,
                 lastDay: lastDay,
-                focusedDay: firstDay,
+                focusedDay: DateTime.now().month == monthIndex + 1 ? DateTime.now() : firstDay,
                 calendarFormat: CalendarFormat.month,
                 headerVisible: false,
                 availableGestures: AvailableGestures.none,
@@ -70,7 +72,6 @@ class AnnualCalendarScreen extends StatelessWidget {
                       : [];
                 },
                 onDaySelected: (selectedDay, focusedDay) {
-                  // Navegar a la pantalla de notas del día
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -90,6 +91,15 @@ class AnnualCalendarScreen extends StatelessWidget {
                     color: Colors.lightBlueAccent,
                     shape: BoxShape.circle,
                   ),
+                  selectedDecoration: BoxDecoration(
+                    color: Colors.blue,
+                    shape: BoxShape.circle,
+                  ),
+                  outsideDaysVisible: false,
+                ),
+                daysOfWeekStyle: DaysOfWeekStyle(
+                  weekdayStyle: TextStyle(color: Colors.black),
+                  weekendStyle: TextStyle(color: Colors.red),
                 ),
               ),
               SizedBox(height: 16.0),

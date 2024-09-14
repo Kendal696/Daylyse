@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Diario con IA',
+      debugShowCheckedModeBanner: false, // Oculta la etiqueta de debug
       theme: themeProvider.getLightTheme,
       darkTheme: themeProvider.getDarkTheme,
       themeMode: themeProvider.themeMode,
