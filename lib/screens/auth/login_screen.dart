@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -8,6 +9,10 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  // Expresión regular para validar correos electrónicos
+  final RegExp emailRegExp =
+      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +48,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _emailController,
                   decoration: InputDecoration(
                     hintText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined, color: Colors.lightBlue.shade700),
+                    prefixIcon: Icon(Icons.email_outlined,
+                        color: Colors.lightBlue.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.9),
                     contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -62,7 +68,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   decoration: InputDecoration(
                     hintText: 'Contraseña',
-                    prefixIcon: Icon(Icons.lock_outline, color: Colors.lightBlue.shade700),
+                    prefixIcon: Icon(Icons.lock_outline,
+                        color: Colors.lightBlue.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.9),
                     contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -79,10 +86,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Botón de iniciar sesión
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/home');
+                    _login(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 80.0, vertical: 20.0),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 80.0, vertical: 20.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
@@ -112,6 +120,41 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _login(BuildContext context) async {
+    // Validaciones
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, complete todos los campos.')),
+      );
+      return;
+    }
+
+    if (!emailRegExp.hasMatch(_emailController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Por favor, ingrese un correo electrónico válido.')),
+      );
+      return;
+    }
+
+    try {
+      // Autenticación con Firebase
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      // Si el inicio de sesión es exitoso, navega a la pantalla de inicio
+      Navigator.pushNamed(context, '/home');
+    } catch (e) {
+      // Manejo de errores
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al iniciar sesión: ${e.toString()}')),
+      );
+    }
   }
 
   @override

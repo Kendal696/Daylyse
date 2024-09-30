@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "489290585479",
+    "project_id": "daylyse",
+    "storage_bucket": "daylyse.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:489290585479:android:6f89c0be05ed2a58b7ef22",
+        "android_client_info": {
+          "package_name": "com.example.daylyse"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBp06GqV9cxGwE36BTFK--Y-OZG6bY4NS8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

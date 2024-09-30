@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -10,10 +11,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  // Expresión regular para validar correos electrónicos
+  final RegExp emailRegExp =
+      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Fondo con degradado de tonos celestes y blancos
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -44,7 +48,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _emailController,
                   decoration: InputDecoration(
                     hintText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined, color: Colors.lightBlue.shade700),
+                    prefixIcon: Icon(Icons.email_outlined,
+                        color: Colors.lightBlue.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.9),
                     contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -63,7 +68,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _passwordController,
                   decoration: InputDecoration(
                     hintText: 'Contraseña',
-                    prefixIcon: Icon(Icons.lock_outline, color: Colors.lightBlue.shade700),
+                    prefixIcon: Icon(Icons.lock_outline,
+                        color: Colors.lightBlue.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.9),
                     contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -82,7 +88,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _confirmPasswordController,
                   decoration: InputDecoration(
                     hintText: 'Confirmar Contraseña',
-                    prefixIcon: Icon(Icons.lock_outline, color: Colors.lightBlue.shade700),
+                    prefixIcon: Icon(Icons.lock_outline,
+                        color: Colors.lightBlue.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.9),
                     contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -99,16 +106,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Botón de registrarse
                 ElevatedButton(
                   onPressed: () {
-                    if (_passwordController.text == _confirmPasswordController.text) {
-                      Navigator.pushNamed(context, '/login');
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Las contraseñas no coinciden')),
-                      );
-                    }
+                    _register(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 80.0, vertical: 20.0),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 80.0, vertical: 20.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
@@ -138,6 +140,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _register(BuildContext context) async {
+    // Verificar que el correo sea válido
+    if (!emailRegExp.hasMatch(_emailController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Por favor, ingrese un correo electrónico válido.')),
+      );
+      return;
+    }
+
+    // Verificar que las contraseñas no estén vacías
+    if (_passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Por favor, complete ambos campos de contraseña.')),
+      );
+      return;
+    }
+
+    // Verificar que las contraseñas coincidan
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Las contraseñas no coinciden.')),
+      );
+      return;
+    }
+
+    try {
+      // Registrar usuario en Firebase Authentication
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      // Redirigir al usuario a la pantalla de inicio de sesión
+      Navigator.pushNamed(context, '/login');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al registrarse: ${e.toString()}')),
+      );
+    }
   }
 
   @override
