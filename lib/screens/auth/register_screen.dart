@@ -1,3 +1,5 @@
+import 'package:daylyse/repositories/auth-firebase_repository.dart';
+import 'package:daylyse/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -9,6 +11,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
+  final _authService = AuthService(auth: AuthFirebaseRepository());
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +48,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _emailController,
                   decoration: InputDecoration(
                     hintText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined, color: Colors.lightBlue.shade700),
+                    prefixIcon: Icon(Icons.email_outlined,
+                        color: Colors.lightBlue.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.9),
                     contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -63,7 +68,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _passwordController,
                   decoration: InputDecoration(
                     hintText: 'Contraseña',
-                    prefixIcon: Icon(Icons.lock_outline, color: Colors.lightBlue.shade700),
+                    prefixIcon: Icon(Icons.lock_outline,
+                        color: Colors.lightBlue.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.9),
                     contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -82,7 +88,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _confirmPasswordController,
                   decoration: InputDecoration(
                     hintText: 'Confirmar Contraseña',
-                    prefixIcon: Icon(Icons.lock_outline, color: Colors.lightBlue.shade700),
+                    prefixIcon: Icon(Icons.lock_outline,
+                        color: Colors.lightBlue.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.9),
                     contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -98,17 +105,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 SizedBox(height: 32.0),
                 // Botón de registrarse
                 ElevatedButton(
-                  onPressed: () {
-                    if (_passwordController.text == _confirmPasswordController.text) {
-                      Navigator.pushNamed(context, '/login');
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Las contraseñas no coinciden')),
-                      );
-                    }
-                  },
+                  onPressed: handleSubmit,
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 80.0, vertical: 20.0),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 80.0, vertical: 20.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
@@ -138,6 +138,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> handleSubmit() async {
+    if (_passwordController.text == _confirmPasswordController.text) {
+      final response = await _authService.createAccount(
+          "Test", _emailController.text, _passwordController.text);
+      if (mounted) {
+        if (response.isSuccess) {
+          Navigator.pushNamed(context, '/login');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(response.errorMessage!)),
+          );
+        }
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Las contraseñas no coinciden')),
+      );
+    }
   }
 
   @override

@@ -15,10 +15,10 @@ class AppTheme {
     drawerTheme: DrawerThemeData(
       backgroundColor: Colors.white,  // Fondo blanco en el Drawer
     ),
-    textTheme: TextTheme(
-      bodyText1: TextStyle(color: Colors.black),  // Texto negro
-      bodyText2: TextStyle(color: Colors.black),
-      headline6: TextStyle(color: Colors.white),  // Texto blanco en AppBar
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: Colors.black),  // Texto negro
+      bodyMedium: TextStyle(color: Colors.black),
+      titleLarge: TextStyle(color: Colors.white),  // Texto blanco en AppBar
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -45,9 +45,9 @@ class AppTheme {
       backgroundColor: Color(0xFF001B33),  // Fondo azul marino en el Drawer
     ),
     textTheme: TextTheme(
-      bodyText1: TextStyle(color: Colors.white),  // Texto blanco
-      bodyText2: TextStyle(color: Colors.white),
-      headline6: TextStyle(color: Colors.white),  // Texto blanco en AppBar
+      bodyLarge: TextStyle(color: Colors.white),  // Texto blanco
+      bodyMedium: TextStyle(color: Colors.white),
+      titleLarge: TextStyle(color: Colors.white),  // Texto blanco en AppBar
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(

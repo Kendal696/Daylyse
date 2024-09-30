@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:intl/intl.dart';
 import '../note_screen.dart';
 import 'day_notes_screen.dart';
 import '../ai_feedback_screen.dart';

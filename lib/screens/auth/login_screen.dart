@@ -1,3 +1,5 @@
+import 'package:daylyse/repositories/auth-firebase_repository.dart';
+import 'package:daylyse/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -8,6 +10,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService(auth: AuthFirebaseRepository());
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +46,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _emailController,
                   decoration: InputDecoration(
                     hintText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined, color: Colors.lightBlue.shade700),
+                    prefixIcon: Icon(Icons.email_outlined,
+                        color: Colors.lightBlue.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.9),
                     contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -62,7 +66,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   decoration: InputDecoration(
                     hintText: 'Contraseña',
-                    prefixIcon: Icon(Icons.lock_outline, color: Colors.lightBlue.shade700),
+                    prefixIcon: Icon(Icons.lock_outline,
+                        color: Colors.lightBlue.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.9),
                     contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -78,11 +83,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(height: 32.0),
                 // Botón de iniciar sesión
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/home');
-                  },
+                  onPressed: handleSubmit,
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 80.0, vertical: 20.0),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 80.0, vertical: 20.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
@@ -112,6 +116,17 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> handleSubmit() async {
+    final response = await _authService.signIn(_emailController.text, _passwordController.text);
+    if (mounted && response.isSuccess) {
+      Navigator.pushNamed(context, '/home');
+    } else {
+       ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.errorMessage!)),
+      );
+    }
   }
 
   @override
