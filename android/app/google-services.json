@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "975119297407",
+    "project_id": "flutterfirebare",
+    "storage_bucket": "flutterfirebare.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:975119297407:android:bfa0c1f0250827a3ea484a",
+        "android_client_info": {
+          "package_name": "com.example.daylyse"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBT-gIg1xy4OvDCUVJ9Jsmg8WrLvAd0-Hk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:975119297407:android:a638046bb08b433dea484a",
+        "android_client_info": {
+          "package_name": "com.example.firebase_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBT-gIg1xy4OvDCUVJ9Jsmg8WrLvAd0-Hk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

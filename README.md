@@ -75,3 +75,30 @@ Las contribuciones al proyecto son bienvenidas. Si deseas colaborar, sigue los s
 
 Este proyecto está licenciado bajo la **MIT License**. Puedes consultar más detalles en el archivo [LICENSE](./LICENSE).
 
+## Configuración del Proyecto
+
+Sigue estos pasos para configurar el proyecto en tu máquina local:
+
+1. **Clona el repositorio:**
+```bash
+   git clone https://github.com/Kendal696/Daylyse.git
+```
+
+2. **Instala las dependencias:**
+```bash
+   flutter pub get
+```
+
+3. **Configura de Firebase:**
+- Tener instalado CLI de Firebase y CLI de Flutter.
+- Iniciar session con tu cuenta de firebase o la cuenta del equipo de desarrollo.
+- Ejecutar el comando `flutterfire configure` para configurar el proyecto de Flutter con Firebase.
+- Agrega la aplicación de Flutter a tu proyecto de Firebase o crear un nuevo proyecto.
+- Selecionar las plataforma a configurar (Android, iOS, Web).
+
+4. **Ejecuta la aplicación:**
+```bash
+   flutter run
+```
+
+    

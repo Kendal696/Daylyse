@@ -1,3 +1,7 @@
+import 'package:daylyse/dtos/note/create_dto.dart';
+import 'package:daylyse/models/user_model.dart';
+import 'package:daylyse/repositories/firestore_repository.dart';
+import 'package:daylyse/services/note_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -15,6 +19,8 @@ class _NoteScreenState extends State<NoteScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   DateTime _selectedDate = DateTime.now(); // Fecha seleccionada
+  final NoteService _noteService =
+      NoteService(repository: FirestoreRepository(collection: "notes"));
 
   // Variables para el formato de texto
   bool _isBold = false;
@@ -143,14 +149,17 @@ class _NoteScreenState extends State<NoteScreen> {
     return Scaffold(
       appBar: AppBar(
         title: GestureDetector(
-          onTap: () => _selectDate(context), // Abre el selector de fecha al tocar la fecha
+          onTap: () => _selectDate(
+              context), // Abre el selector de fecha al tocar la fecha
           child: Row(
-            mainAxisSize: MainAxisSize.min, // Minimiza el espacio ocupado por el título
+            mainAxisSize:
+                MainAxisSize.min, // Minimiza el espacio ocupado por el título
             children: [
               Icon(Icons.calendar_today, size: 20),
               SizedBox(width: 8),
               Text(
-                DateFormat('d MMM yyyy').format(_selectedDate), // Muestra la fecha seleccionada
+                DateFormat('d MMM yyyy')
+                    .format(_selectedDate), // Muestra la fecha seleccionada
                 style: TextStyle(fontSize: 18),
               ),
             ],
@@ -162,7 +171,8 @@ class _NoteScreenState extends State<NoteScreen> {
             onPressed: _previousDay,
           ),
           IconButton(
-            icon: Icon(Icons.arrow_forward), // Ícono para cambiar al día siguiente
+            icon: Icon(
+                Icons.arrow_forward), // Ícono para cambiar al día siguiente
             onPressed: _nextDay,
           ),
         ],
@@ -256,27 +266,35 @@ class _NoteScreenState extends State<NoteScreen> {
             ),
             SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: () {
-                final title = _titleController.text;
-                final description = _descriptionController.text;
-                if (title.isNotEmpty && description.isNotEmpty) {
-                  widget.onSaveNote(
-                      title, description, _selectedDate); // Guarda la nota
-                  Navigator.pop(context); // Regresa a la pantalla anterior
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text('Por favor, rellena ambos campos')),
-                  );
-                }
-              },
-              child:
-                  Text(widget.note == null ? 'Guardar Nota' : 'Actualizar Nota'),
+              onPressed: handleSubmit,
+              child: Text(
+                  widget.note == null ? 'Guardar Nota' : 'Actualizar Nota'),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> handleSubmit() async {
+    try {
+      final title = _titleController.text;
+      final description = _descriptionController.text;
+      if (title.isEmpty && description.isEmpty) throw Exception('Por favor, rellena ambos campos');
+      final user = UserModel.getInstance;
+      final response = await _noteService.create(CreateNoteDto.fromObject({
+        "title": title,
+        "body": description,
+        "createdAt": _selectedDate,
+        "idUser": user.id
+      }));
+      widget.onSaveNote(title, description, _selectedDate); // Guarda la nota
+      Navigator.pop(context); // Regresa a la pantalla anterior
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().split(":").last)),
+      );
+    }
   }
 
   @override
