@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsScreen extends StatelessWidget {
-  bool _notificationsEnabled = true; // Debería ser manejado por un estado o proveedor
-  bool _diaryLocked = false; // Debería ser manejado por un estado o proveedor
+  final bool _notificationsEnabled =
+      true; // Debería ser manejado por un estado o proveedor
+  final bool _diaryLocked =
+      false; // Debería ser manejado por un estado o proveedor
+
+  Future<void> _signOut(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.of(context).pushReplacementNamed(
+        '/login'); // Redirige al usuario a la pantalla de inicio de sesión
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Configuraciones'),
+        backgroundColor: Colors.blueAccent,
       ),
       body: ListView(
         children: [
@@ -47,7 +57,18 @@ class SettingsScreen extends StatelessWidget {
               // Lógica para respaldar y sincronizar datos
             },
           ),
-          // Puedes agregar más opciones según lo consideres necesario
+          Divider(), // Línea divisoria para separar el botón de cerrar sesión
+          ListTile(
+            leading: Icon(Icons.logout, color: Colors.blueAccent),
+            title: Text(
+              'Cerrar Sesión',
+              style: TextStyle(
+                  color: Colors.blueAccent, fontWeight: FontWeight.bold),
+            ),
+            onTap: () async {
+              await _signOut(context);
+            },
+          ),
         ],
       ),
     );

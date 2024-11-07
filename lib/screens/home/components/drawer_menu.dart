@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:daylyse/screens/settings/settings_screen.dart';
-import 'package:daylyse/themes/theme_screen.dart'; 
+import 'package:daylyse/themes/theme_screen.dart';
 import 'package:daylyse/screens/settings/faq_screen.dart';
 
 class DrawerMenu extends StatelessWidget {
@@ -24,7 +24,7 @@ class DrawerMenu extends StatelessWidget {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  'daylyuse',
+                  'daylyse',
                   style: TextStyle(color: Colors.white, fontSize: 24),
                 ),
               ],

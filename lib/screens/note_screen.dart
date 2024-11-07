@@ -280,7 +280,8 @@ class _NoteScreenState extends State<NoteScreen> {
     try {
       final title = _titleController.text;
       final description = _descriptionController.text;
-      if (title.isEmpty && description.isEmpty) throw Exception('Por favor, rellena ambos campos');
+      if (title.isEmpty && description.isEmpty)
+        throw Exception('Por favor, rellena ambos campos');
       final user = UserModel.getInstance;
       final response = await _noteService.create(CreateNoteDto.fromObject({
         "title": title,

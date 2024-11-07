@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../note_screen.dart';
 import 'day_notes_screen.dart';
 import '../ai_feedback_screen.dart';
@@ -15,30 +17,80 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   bool _isCalendarExpanded = false;
-  Map<DateTime, List<Map<String, dynamic>>> _notes = {};
   bool _isSortedByRecent = true;
   String _searchQuery = '';
 
+  String? _userId;
+  Map<DateTime, List<Map<String, dynamic>>> _notes = {};
   bool _isSelectionMode = false;
   Set<Map<String, dynamic>> _selectedNotes = {};
 
-  void _addNote(String title, String description, DateTime date) {
-    setState(() {
-      DateTime noteDate = DateTime(date.year, date.month, date.day);
-      if (_notes[noteDate] == null) {
-        _notes[noteDate] = [];
-      }
-      _notes[noteDate]!.add({
-        'title': title,
-        'description': description,
-        'date': noteDate,
-      });
-    });
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentUser();
   }
 
+  void _getCurrentUser() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      setState(() {
+        _userId = user.uid;
+      });
+      _loadUserNotes();
+    }
+  }
+
+  void _loadUserNotes() async {
+    if (_userId != null) {
+      QuerySnapshot snapshot = await _firestore
+          .collection('notes')
+          .where('idUser', isEqualTo: _userId)
+          .get();
+
+      setState(() {
+        _notes.clear();
+        for (var doc in snapshot.docs) {
+          DateTime noteDate = (doc['createdAt'] as Timestamp).toDate();
+          noteDate = DateTime(noteDate.year, noteDate.month, noteDate.day);
+
+          if (_notes[noteDate] == null) {
+            _notes[noteDate] = [];
+          }
+
+          final data = doc.data() as Map<String, dynamic>?;
+
+          _notes[noteDate]!.add({
+            'title':
+                data != null && data.containsKey('title') ? data['title'] : '',
+            'description':
+                data != null && data.containsKey('body') ? data['body'] : '',
+            'date': noteDate,
+          });
+        }
+      });
+    }
+  }
+
+  void _addNote(String title, String description, DateTime date) async {
+    if (_userId != null) {
+      await _firestore.collection('notes').add({
+        'title': title,
+        'body': description,
+        'createdAt': Timestamp.fromDate(date),
+        'idUser': _userId,
+      });
+      _loadUserNotes();
+    }
+  }
+
+  // Método para editar una nota en la lista local
   void _editNote(DateTime date, int index, String title, String description) {
     setState(() {
       DateTime noteDate = DateTime(date.year, date.month, date.day);
@@ -47,6 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // Método para eliminar las notas seleccionadas
   void _deleteSelectedNotes() {
     setState(() {
       _selectedNotes.forEach((note) {
@@ -69,7 +122,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return allNotes.where((note) {
       return note['title'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          note['description'].toLowerCase().contains(_searchQuery.toLowerCase());
+          note['description']
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -132,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return true;
       },
       child: Scaffold(
-        appBar: CustomAppBar( // Utilizamos el AppBar personalizado
+        appBar: CustomAppBar(
           isSelectionMode: _isSelectionMode,
           selectedCount: _selectedNotes.length,
           onSearchChanged: (query) {
@@ -149,10 +204,10 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           onDeleteSelected: _deleteSelectedNotes,
         ),
-        drawer: DrawerMenu(),  // Utilizamos el Drawer separado
+        drawer: DrawerMenu(),
         body: Column(
           children: [
-            CalendarHeader(  // Utilizamos el header del calendario
+            CalendarHeader(
               focusedDay: _focusedDay,
               isCalendarExpanded: _isCalendarExpanded,
               onExpandToggle: () {
@@ -170,8 +225,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   return isSameDay(_selectedDay, day);
                 },
                 eventLoader: (day) {
-                  DateTime dateWithoutTime = DateTime(day.year, day.month, day.day);
-                  return _notes[dateWithoutTime] != null && _notes[dateWithoutTime]!.isNotEmpty
+                  DateTime dateWithoutTime =
+                      DateTime(day.year, day.month, day.day);
+                  return _notes[dateWithoutTime] != null &&
+                          _notes[dateWithoutTime]!.isNotEmpty
                       ? ['note']
                       : [];
                 },
@@ -185,9 +242,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(
                       builder: (context) => DayNotesScreen(
                         date: selectedDay,
-                        notes: _notes[DateTime(selectedDay.year, selectedDay.month, selectedDay.day)] ?? [],
+                        notes: _notes[DateTime(selectedDay.year,
+                                selectedDay.month, selectedDay.day)] ??
+                            [],
                         onEditNote: (index, title, description) => _editNote(
-                            DateTime(selectedDay.year, selectedDay.month, selectedDay.day),
+                            DateTime(selectedDay.year, selectedDay.month,
+                                selectedDay.day),
                             index,
                             title,
                             description),
@@ -245,8 +305,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             builder: (context) => NoteScreen(
                               onSaveNote: (title, description, date) {
                                 _editNote(
-                                  DateTime(note['date'].year, note['date'].month, note['date'].day),
-                                  _notes[DateTime(note['date'].year, note['date'].month, note['date'].day)]!
+                                  DateTime(note['date'].year,
+                                      note['date'].month, note['date'].day),
+                                  _notes[DateTime(
+                                          note['date'].year,
+                                          note['date'].month,
+                                          note['date'].day)]!
                                       .indexOf(note),
                                   title,
                                   description,
@@ -259,12 +323,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                     },
                     onAnalyze: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AIFeedbackScreen(note: note),
-                        ),
-                      );
+                      if (note['description'] != null &&
+                          note['description'].isNotEmpty) {
+                        print(
+                            "Descripción de la nota: ${note['description']}"); // Imprime el contenido de la descripción
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AIFeedbackScreen(note: note),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  'La nota está vacía y no se puede analizar.')),
+                        );
+                      }
                     },
                   );
                 },
@@ -272,14 +347,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        floatingActionButton: FloatingButtons( // Utilizamos los botones flotantes separados
+        floatingActionButton: FloatingButtons(
           notes: _notes,
           onAddNote: () {
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => NoteScreen(
-                  onSaveNote: (title, description, date) => _addNote(title, description, date),
+                  onSaveNote: (title, description, date) =>
+                      _addNote(title, description, date),
                 ),
               ),
             );
